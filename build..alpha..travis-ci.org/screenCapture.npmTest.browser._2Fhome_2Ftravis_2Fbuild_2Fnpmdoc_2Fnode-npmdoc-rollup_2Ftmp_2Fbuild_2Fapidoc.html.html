@@ -1,0 +1,192 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/rollup/rollup">rollup (v0.41.6)</a>
+</h1>
+<h4>Next-generation ES6 module bundler</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.rollup">module rollup</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.rollup.rollup">
+            function <span class="apidocSignatureSpan"></span>rollup
+            <span class="apidocSignatureSpan">( options )</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <span class="apidocSignatureSpan">string <span class="apidocSignatureSpan">rollup.</span>VERSION</span>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.rollup" id="apidoc.module.rollup">module rollup</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.rollup.rollup" id="apidoc.element.rollup.rollup">
+        function <span class="apidocSignatureSpan"></span>rollup
+        <span class="apidocSignatureSpan">( options )</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function rollup( options ) {
+	var err = checkOptions ( options );
+	if ( err ) return Promise.reject( err );
+
+	var bundle = new Bundle$$1( options );
+
+	timeStart( '--BUILD--' );
+
+	return bundle.build().then( function () {
+		timeEnd( '--BUILD--' );
+
+		function generate ( options ) {
+			if ( options === void 0 ) options = {};
+
+			if ( !options.format ) {
+				bundle.warn({
+					code: 'MISSING_FORMAT',
+					message: "No format option was supplied â€“ defaulting to 'es'",
+					url: "https://github.com/rollup/rollup/wiki/JavaScript-API#format"
+				});
+
+				options.format = 'es';
+			}
+
+			timeStart( '--GENERATE--' );
+
+			var rendered = bundle.render( options );
+
+			timeEnd( '--GENERATE--' );
+
+			bundle.plugins.forEach( function (plugin) {
+				if ( plugin.ongenerate ) {
+					plugin.ongenerate( assign({
+						bundle: result
+					}, options ), rendered);
+				}
+			});
+
+			flushTime();
+
+			return rendered;
+		}
+
+		var result = {
+			imports: bundle.externalModules.map( function (module) { return module.id; } ),
+			exports: keys( bundle.entryModule.exports ),
+			modules: bundle.orderedModules.map( function (module) { return module.toJSON(); } ),
+
+			generate: generate,
+			write: function (options) {
+				if ( !options || !options.dest ) {
+					error({
+						code: 'MISSING_OPTION',
+						message: 'You must supply options.dest to bundle.write'
+					});
+				}
+
+				var dest = options.dest;
+				var output = generate( options );
+				var code = output.code;
+				var map = output.map;
+
+				var promises = [];
+
+				if ( options.sourceMap ) {
+					var url;
+
+					if ( options.sourceMap === 'inline' ) {
+						url = map.toUrl();
+					} else {
+						url = (path.basename( dest )) + ".map";
+						promises.push( writeFile$1( dest + '.map', map.toString() ) );
+					}
+
+					code += "//# " + SOURCEMAPPING_URL + "=" + url + "\n";
+				}
+
+				promises.push( writeFile$1( dest, code ) );
+				return Promise.all( promises ).then( function () {
+					return mapSequence( bundle.plugins.filter( function (plugin) { return plugin.onwrite; } ), function (plugin) {
+						return Promise.resolve( plugin.onwrite( assign({
+							bundle: result
+						}, options ), output));
+					});
+				});
+			}
+		};
+
+		return result;
+	});
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
