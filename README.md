@@ -1,7 +1,12 @@
-# api documentation for  [rollup (v0.41.6)](https://github.com/rollup/rollup)  [![npm package](https://img.shields.io/npm/v/npmdoc-rollup.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-rollup) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-rollup.svg)](https://travis-ci.org/npmdoc/node-npmdoc-rollup)
+# npmdoc-rollup
+
+#### basic api documentation for  [rollup (v0.41.6)](https://github.com/rollup/rollup)  [![npm package](https://img.shields.io/npm/v/npmdoc-rollup.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-rollup) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-rollup.svg)](https://travis-ci.org/npmdoc/node-npmdoc-rollup)
+
 #### Next-generation ES6 module bundler
 
 [![NPM](https://nodei.co/npm/rollup.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/rollup)
+
+- [https://npmdoc.github.io/node-npmdoc-rollup/build/apidoc.html](https://npmdoc.github.io/node-npmdoc-rollup/build/apidoc.html)
 
 [![apidoc](https://npmdoc.github.io/node-npmdoc-rollup/build/screenCapture.buildCi.browser.%252Ftmp%252Fbuild%252Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-rollup/build/apidoc.html)
 
@@ -127,118 +132,6 @@
     },
     "version": "0.41.6"
 }
-```
-
-
-
-# <a name="apidoc.tableOfContents"></a>[table of contents](#apidoc.tableOfContents)
-
-#### [module rollup](#apidoc.module.rollup)
-1.  [function <span class="apidocSignatureSpan"></span>rollup ( options )](#apidoc.element.rollup.rollup)
-1.  string <span class="apidocSignatureSpan">rollup.</span>VERSION
-
-
-
-# <a name="apidoc.module.rollup"></a>[module rollup](#apidoc.module.rollup)
-
-#### <a name="apidoc.element.rollup.rollup"></a>[function <span class="apidocSignatureSpan"></span>rollup ( options )](#apidoc.element.rollup.rollup)
-- description and source-code
-```javascript
-function rollup( options ) {
-	var err = checkOptions ( options );
-	if ( err ) return Promise.reject( err );
-
-	var bundle = new Bundle$$1( options );
-
-	timeStart( '--BUILD--' );
-
-	return bundle.build().then( function () {
-		timeEnd( '--BUILD--' );
-
-		function generate ( options ) {
-			if ( options === void 0 ) options = {};
-
-			if ( !options.format ) {
-				bundle.warn({
-					code: 'MISSING_FORMAT',
-					message: "No format option was supplied – defaulting to 'es'",
-					url: "https://github.com/rollup/rollup/wiki/JavaScript-API#format"
-				});
-
-				options.format = 'es';
-			}
-
-			timeStart( '--GENERATE--' );
-
-			var rendered = bundle.render( options );
-
-			timeEnd( '--GENERATE--' );
-
-			bundle.plugins.forEach( function (plugin) {
-				if ( plugin.ongenerate ) {
-					plugin.ongenerate( assign({
-						bundle: result
-					}, options ), rendered);
-				}
-			});
-
-			flushTime();
-
-			return rendered;
-		}
-
-		var result = {
-			imports: bundle.externalModules.map( function (module) { return module.id; } ),
-			exports: keys( bundle.entryModule.exports ),
-			modules: bundle.orderedModules.map( function (module) { return module.toJSON(); } ),
-
-			generate: generate,
-			write: function (options) {
-				if ( !options || !options.dest ) {
-					error({
-						code: 'MISSING_OPTION',
-						message: 'You must supply options.dest to bundle.write'
-					});
-				}
-
-				var dest = options.dest;
-				var output = generate( options );
-				var code = output.code;
-				var map = output.map;
-
-				var promises = [];
-
-				if ( options.sourceMap ) {
-					var url;
-
-					if ( options.sourceMap === 'inline' ) {
-						url = map.toUrl();
-					} else {
-						url = (path.basename( dest )) + ".map";
-						promises.push( writeFile$1( dest + '.map', map.toString() ) );
-					}
-
-					code += "//# " + SOURCEMAPPING_URL + "=" + url + "\n";
-				}
-
-				promises.push( writeFile$1( dest, code ) );
-				return Promise.all( promises ).then( function () {
-					return mapSequence( bundle.plugins.filter( function (plugin) { return plugin.onwrite; } ), function (plugin) {
-						return Promise.resolve( plugin.onwrite( assign({
-							bundle: result
-						}, options ), output));
-					});
-				});
-			}
-		};
-
-		return result;
-	});
-}
-```
-- example usage
-```shell
-n/a
 ```
 
 
